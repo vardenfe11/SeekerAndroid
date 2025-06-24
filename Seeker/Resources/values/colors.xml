@@ -53,6 +53,9 @@
   <color name="absoluteBackColor1">#ff000000</color>
   <color name="absoluteBackColor2">#ff303030</color>
   <color name="absoluteBackColor3">#ffffff</color>
+  <!-- Fast scroller colors -->
+  <color name="fastscroll_thumb_color">#99000000</color>
+  <color name="fastscroll_track_color">#33000000</color>
 
   
   
