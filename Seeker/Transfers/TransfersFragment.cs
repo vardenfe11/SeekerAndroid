@@ -984,7 +984,7 @@ namespace Seeker
             else
             {
                 recyclerViewTransferItems.ScrollbarFadingEnabled = true;
-                recyclerViewTransferItems.ScrollbarDefaultDelayBeforeFade = 1000;
+                recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
             }
         }
 
@@ -1017,7 +1017,6 @@ namespace Seeker
                     recyclerViewTransferItems.ScrollBy(0, -recyclerViewTransferItems.Height);
                     break;
                 case Keycode.MoveEnd:
-                case Keycode.End:
                     recyclerViewTransferItems.ScrollToPosition(itemCount - 1);
                     break;
                 case Keycode.MoveHome:
