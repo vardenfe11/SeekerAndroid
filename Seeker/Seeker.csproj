@@ -62,7 +62,7 @@
   </Choose>
   <ItemGroup>
     <PackageReference Include="MessagePack">
-      <Version>2.5.140</Version>
+      <Version>2.5.198</Version>
     </PackageReference>
     <PackageReference Include="MessagePackAnalyzer">
       <Version>2.5.140</Version>
@@ -73,7 +73,7 @@
       <Version>17.9.5</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>8.0.4</Version>
+      <Version>8.0.5</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.ConstraintLayout">
       <Version>2.1.4.5</Version>
@@ -109,6 +109,7 @@
   </ItemGroup>
   <PropertyGroup />
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-	<Exec Command="powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(ProjectDir)PreBuild.ps1 &quot;$(ProjectDir)Properties\AndroidManifest.xml&quot; &quot;$(ConfigurationName)&quot;" />
+    <!-- Windows -->
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell.exe -ExecutionPolicy Bypass -NoProfile -File $(ProjectDir)PreBuild.ps1 &quot;$(ProjectDir)Properties\AndroidManifest.xml&quot; $(Configuration)" />
   </Target>
 </Project>
