@@ -984,7 +984,10 @@ namespace Seeker
             else
             {
                 recyclerViewTransferItems.ScrollbarFadingEnabled = true;
-                recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
+                if ((int)Build.VERSION.SdkInt >= 26)
+                {
+                    recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
+                }
             }
         }
 
