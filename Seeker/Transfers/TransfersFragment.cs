@@ -681,6 +681,7 @@ namespace Seeker
             }
             //this.primaryListView = rootView.FindViewById<ListView>(Resource.Id.listView1);
             recyclerViewTransferItems = rootView.FindViewById<RecyclerView>(Resource.Id.recyclerView1);
+            ConfigureScrollBar();
             this.noTransfers = rootView.FindViewById<TextView>(Resource.Id.noTransfersView);
             this.setupUpSharing = rootView.FindViewById<Button>(Resource.Id.setUpSharing);
             this.setupUpSharing.Click += SetupUpSharing_Click;
@@ -948,6 +949,7 @@ namespace Seeker
         public override void OnResume()
         {
             StaticHacks.TransfersFrag = this;
+            ConfigureScrollBar();
             if (MainActivity.fromNotificationMoveToUploads)
             {
                 MainActivity.fromNotificationMoveToUploads = false;
@@ -972,6 +974,18 @@ namespace Seeker
             MainActivity.LogDebug("TransferFragment OnPause");  //this occurs when we move to the Account Tab or if we press the home button (i.e. to later kill the process)
                                                                 //so this is a good place to do it.
             SaveTransferItems(sharedPreferences);
+        }
+
+        private void ConfigureScrollBar()
+        {
+            if (recyclerViewTransferItems == null)
+            {
+                return;
+            }
+            var orient = Resources.Configuration.Orientation;
+            recyclerViewTransferItems.ScrollbarFadingEnabled = orient != Orientation.Landscape;
+            recyclerViewTransferItems.ScrollBarFadeDuration = 1000;
+            recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
         }
 
         public static object TransferStateSaveLock = new object();
