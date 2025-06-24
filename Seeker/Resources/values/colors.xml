@@ -49,6 +49,10 @@
 	
   <color name="chipSeparatorColor">#ff606060</color>
 
+  <!-- Colors for transfers fast scroller -->
+  <color name="transfers_scrollbar_thumb">#B3000000</color>
+  <color name="transfers_scrollbar_track">#33000000</color>
+
 
   <color name="absoluteBackColor1">#ff000000</color>
   <color name="absoluteBackColor2">#ff303030</color>
