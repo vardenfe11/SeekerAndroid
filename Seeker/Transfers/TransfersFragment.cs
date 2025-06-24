@@ -971,13 +971,13 @@ namespace Seeker
             SetScrollbarVisibility(newConfig.Orientation);
         }
 
-        private void SetScrollbarVisibility(Orientation orientation)
+        private void SetScrollbarVisibility(Android.Content.Res.Orientation orientation)
         {
             if (recyclerViewTransferItems == null)
             {
                 return;
             }
-            if (orientation == Orientation.Landscape)
+            if (orientation == Android.Content.Res.Orientation.Landscape)
             {
                 recyclerViewTransferItems.ScrollbarFadingEnabled = false;
             }
