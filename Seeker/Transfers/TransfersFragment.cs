@@ -681,6 +681,8 @@ namespace Seeker
             }
             //this.primaryListView = rootView.FindViewById<ListView>(Resource.Id.listView1);
             recyclerViewTransferItems = rootView.FindViewById<RecyclerView>(Resource.Id.recyclerView1);
+            ConfigureScrollBar();
+            SetupScrollInputHandlers();
             this.noTransfers = rootView.FindViewById<TextView>(Resource.Id.noTransfersView);
             this.setupUpSharing = rootView.FindViewById<Button>(Resource.Id.setUpSharing);
             this.setupUpSharing.Click += SetupUpSharing_Click;
@@ -948,6 +950,7 @@ namespace Seeker
         public override void OnResume()
         {
             StaticHacks.TransfersFrag = this;
+            ConfigureScrollBar();
             if (MainActivity.fromNotificationMoveToUploads)
             {
                 MainActivity.fromNotificationMoveToUploads = false;
@@ -972,6 +975,96 @@ namespace Seeker
             MainActivity.LogDebug("TransferFragment OnPause");  //this occurs when we move to the Account Tab or if we press the home button (i.e. to later kill the process)
                                                                 //so this is a good place to do it.
             SaveTransferItems(sharedPreferences);
+        }
+
+        private void ConfigureScrollBar()
+        {
+            if (recyclerViewTransferItems == null)
+            {
+                return;
+            }
+            var orient = Resources.Configuration.Orientation;
+            recyclerViewTransferItems.ScrollbarFadingEnabled = orient != Orientation.Landscape;
+            recyclerViewTransferItems.ScrollBarFadeDuration = 1000;
+            recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
+        }
+
+        private void SetupScrollInputHandlers()
+        {
+            if (recyclerViewTransferItems == null)
+            {
+                return;
+            }
+            recyclerViewTransferItems.KeyPress += RecyclerViewTransferItems_KeyPress;
+            recyclerViewTransferItems.Touch += RecyclerViewTransferItems_Touch;
+        }
+
+        private void RecyclerViewTransferItems_KeyPress(object sender, View.KeyEventArgs e)
+        {
+            if (e.Event.Action != KeyEventActions.Down)
+            {
+                return;
+            }
+            var lm = recycleLayoutManager as LinearLayoutManager;
+            if (lm == null || recyclerTransferAdapter == null)
+            {
+                return;
+            }
+            int first = lm.FindFirstVisibleItemPosition();
+            int last = lm.FindLastVisibleItemPosition();
+            int pageSize = last - first;
+            int target = first;
+            switch (e.KeyCode)
+            {
+                case Keycode.DpadDown:
+                    target = Math.Min(last + 1, recyclerTransferAdapter.ItemCount - 1);
+                    break;
+                case Keycode.DpadUp:
+                    target = Math.Max(first - 1, 0);
+                    break;
+                case Keycode.PageDown:
+                    target = Math.Min(first + pageSize, recyclerTransferAdapter.ItemCount - 1);
+                    break;
+                case Keycode.PageUp:
+                    target = Math.Max(first - pageSize, 0);
+                    break;
+                case Keycode.MoveHome:
+                    target = 0;
+                    break;
+                case Keycode.MoveEnd:
+                    target = recyclerTransferAdapter.ItemCount - 1;
+                    break;
+                default:
+                    return;
+            }
+            lm.ScrollToPositionWithOffset(target, 0);
+            e.Handled = true;
+        }
+
+        private void RecyclerViewTransferItems_Touch(object sender, View.TouchEventArgs e)
+        {
+            if (e.Event.Action == MotionEventActions.Down &&
+                (e.Event.Source & InputSourceType.Mouse) == InputSourceType.Mouse)
+            {
+                if (recyclerTransferAdapter == null)
+                {
+                    return;
+                }
+                var lm = recycleLayoutManager as LinearLayoutManager;
+                if (lm == null)
+                {
+                    return;
+                }
+                float ratio = e.Event.GetY() / recyclerViewTransferItems.Height;
+                int target = (int)(ratio * recyclerTransferAdapter.ItemCount);
+                target = Math.Max(0, Math.Min(target, recyclerTransferAdapter.ItemCount - 1));
+                lm.ScrollToPositionWithOffset(target, 0);
+                e.Handled = true;
+            }
+            else
+            {
+                e.Handled = false;
+            }
         }
 
         public static object TransferStateSaveLock = new object();
