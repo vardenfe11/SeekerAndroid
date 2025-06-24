@@ -983,7 +983,7 @@ namespace Seeker
                 return;
             }
             var orient = Resources.Configuration.Orientation;
-            recyclerViewTransferItems.ScrollbarFadingEnabled = orient != Orientation.Landscape;
+            recyclerViewTransferItems.ScrollbarFadingEnabled = orient != Android.Content.Res.Orientation.Landscape;
             recyclerViewTransferItems.ScrollBarFadeDuration = 1000;
             recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
         }
