@@ -685,10 +685,6 @@ namespace Seeker
             this.setupUpSharing = rootView.FindViewById<Button>(Resource.Id.setUpSharing);
             this.setupUpSharing.Click += SetupUpSharing_Click;
 
-            recyclerViewTransferItems.FocusableInTouchMode = true;
-            recyclerViewTransferItems.RequestFocus();
-            recyclerViewTransferItems.KeyPress += RecyclerViewTransferItems_KeyPress;
-
             //View transferOptions = rootView.FindViewById<View>(Resource.Id.transferOptions);
             //transferOptions.Click += TransferOptions_Click;
             this.RegisterForContextMenu(recyclerViewTransferItems); //doesnt work for recycle views
@@ -715,8 +711,6 @@ namespace Seeker
             //            .getSerializable(KEY_LAYOUT_MANAGER);
             //}
 
-            recycleLayoutManager.ItemPrefetchEnabled = true;
-            recyclerViewTransferItems.SetItemViewCacheSize(20);
             recyclerViewTransferItems.SetLayoutManager(recycleLayoutManager);
 
             //// If a layout manager has already been set, get current scroll position.
@@ -960,73 +954,7 @@ namespace Seeker
                 this.MoveToUploadForNotif();
             }
             SetNoTransfersMessage(); // in case coming back from settings
-
-            SetScrollbarVisibility(Resources.Configuration.Orientation);
             base.OnResume();
-        }
-
-        public override void OnConfigurationChanged(Configuration newConfig)
-        {
-            base.OnConfigurationChanged(newConfig);
-            SetScrollbarVisibility(newConfig.Orientation);
-        }
-
-        private void SetScrollbarVisibility(Android.Content.Res.Orientation orientation)
-        {
-            if (recyclerViewTransferItems == null)
-            {
-                return;
-            }
-            if (orientation == Android.Content.Res.Orientation.Landscape)
-            {
-                recyclerViewTransferItems.ScrollbarFadingEnabled = false;
-            }
-            else
-            {
-                recyclerViewTransferItems.ScrollbarFadingEnabled = true;
-                if ((int)Build.VERSION.SdkInt >= 26)
-                {
-                    recyclerViewTransferItems.ScrollBarDefaultDelayBeforeFade = 1000;
-                }
-            }
-        }
-
-        private void RecyclerViewTransferItems_KeyPress(object sender, View.KeyEventArgs e)
-        {
-            if (e.Event.Action != KeyEventActions.Down)
-            {
-                return;
-            }
-
-            var layoutManager = recyclerViewTransferItems.GetLayoutManager() as LinearLayoutManager;
-            if (layoutManager == null)
-            {
-                return;
-            }
-            int itemCount = recyclerViewTransferItems.GetAdapter()?.ItemCount ?? 0;
-
-            switch (e.KeyCode)
-            {
-                case Keycode.DpadDown:
-                    recyclerViewTransferItems.ScrollBy(0, 100);
-                    break;
-                case Keycode.DpadUp:
-                    recyclerViewTransferItems.ScrollBy(0, -100);
-                    break;
-                case Keycode.PageDown:
-                    recyclerViewTransferItems.ScrollBy(0, recyclerViewTransferItems.Height);
-                    break;
-                case Keycode.PageUp:
-                    recyclerViewTransferItems.ScrollBy(0, -recyclerViewTransferItems.Height);
-                    break;
-                case Keycode.MoveEnd:
-                    recyclerViewTransferItems.ScrollToPosition(itemCount - 1);
-                    break;
-                case Keycode.MoveHome:
-                case Keycode.Home:
-                    recyclerViewTransferItems.ScrollToPosition(0);
-                    break;
-            }
         }
 
         public void MoveToUploadForNotif()
