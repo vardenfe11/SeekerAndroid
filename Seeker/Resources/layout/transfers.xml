@@ -1,18 +1,22 @@
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="android.PageFragment"
     android:id="@+id/relativeLayout1">
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_below = "@id/header1"
+        android:layout_below="@id/header1"
+        android:scrollbars="vertical"
+        app:fastScrollEnabled="true"
+        app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
+        app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
         android:minWidth="25px"
         android:minHeight="25px"
-        android:scrollbars="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/recyclerView1" />
           <TextView
       android:layout_width = "200dp"
