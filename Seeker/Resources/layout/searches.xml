@@ -39,7 +39,6 @@
                 app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
                 app:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
                 app:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track"
-                app:fastScrollMinimumRange="@dimen/fastscroll_minimum_range"
                 android:paddingBottom="80dp"
                 android:clipToPadding="false"
                 android:minHeight="25px"
