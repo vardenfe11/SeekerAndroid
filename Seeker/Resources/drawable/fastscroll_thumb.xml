@@ -3,7 +3,8 @@
     <item>
         <shape android:shape="rectangle">
             <!-- Wider and taller thumb for easier touch interaction -->
-            <size android:width="24dp" android:height="48dp" />
+            <!-- Ensure recommended minimum touch size -->
+            <size android:width="48dp" android:height="48dp" />
             <solid android:color="@color/fastscroll_thumb_color" />
             <corners android:radius="12dp" />
         </shape>
