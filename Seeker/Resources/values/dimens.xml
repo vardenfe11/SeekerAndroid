@@ -1,11 +1,8 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
-        <dimen name="step_pager_tab_width">32dp</dimen>
-        <dimen name="step_pager_tab_height">3dp</dimen>
-        <dimen name="step_pager_tab_spacing">4dp</dimen>
-
-        <!-- Ensure fast scroller thumb never shrinks below recommended touch size -->
-        <dimen name="fastscroll_minimum_range">48dp</dimen>
+	<dimen name="step_pager_tab_width">32dp</dimen>
+	<dimen name="step_pager_tab_height">3dp</dimen>
+	<dimen name="step_pager_tab_spacing">4dp</dimen>
 
 
 

@@ -1,5 +1,3 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
-    <!-- Mirror fast scroller min height for dark mode -->
-    <dimen name="fastscroll_minimum_range">48dp</dimen>
 </resources>
