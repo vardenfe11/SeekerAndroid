@@ -34,7 +34,6 @@
         <androidx.recyclerview.widget.RecyclerView
             android:layout_below = "@id/recyclerViewChips"
             android:minWidth="25px"
-            android:scrollbars="vertical"
             app:fastScrollEnabled="true"
             app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
             app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
