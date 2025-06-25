@@ -11,6 +11,7 @@ using Android.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
+using Com.Turingtechnologies.Materialscrollbar;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.FloatingActionButton;
@@ -912,6 +913,12 @@ namespace Seeker
             recycleLayoutManager = new LinearLayoutManager(Activity);
             recyclerViewTransferItems.SetItemAnimator(null); //todo
             recyclerViewTransferItems.SetLayoutManager(recycleLayoutManager);
+
+            var scrollBar = rootView.FindViewById<MaterialScrollBar>(Resource.Id.scrollBarSearch);
+            if (scrollBar != null)
+            {
+                scrollBar.SetRecyclerView(recyclerViewTransferItems);
+            }
             if (SearchTabHelper.FilteredResults)
             {
                 recyclerSearchAdapter = new SearchAdapterRecyclerVersion(SearchTabHelper.UI_SearchResponses);
