@@ -16,6 +16,7 @@
             app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
             app:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
             app:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track"
+            app:fastScrollMinimumRange="@dimen/fastscroll_minimum_range"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/recyclerView1"/>
