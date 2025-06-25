@@ -8,16 +8,11 @@
     tools:context="android.PageFragment"
     android:id="@+id/relativeLayout1">
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_below="@id/header1"
+        android:layout_below = "@id/header1"
         android:minWidth="25px"
         android:minHeight="25px"
         android:scrollbars="vertical"
-        android:fastScrollEnabled="true"
         app:fastScrollEnabled="true"
-        android:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
-        android:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
-        android:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
-        android:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track"
         app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
         app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
         app:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"

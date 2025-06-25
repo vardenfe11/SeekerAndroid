@@ -32,20 +32,14 @@
         android:id="@+id/recyclerViewChips" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:layout_below="@id/recyclerViewChips"
+            android:layout_below = "@id/recyclerViewChips"
             android:minWidth="25px"
-            android:scrollbars="vertical"
-            android:fastScrollEnabled="true"
             app:fastScrollEnabled="true"
-            android:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
-            android:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
-            android:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
-            android:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track"
             app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
             app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
             app:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
             app:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track"
-            android:paddingBottom="80dp"
+                  android:paddingBottom="80dp"
             android:clipToPadding="false"
             android:minHeight="25px"
             android:layout_width="wrap_content"
