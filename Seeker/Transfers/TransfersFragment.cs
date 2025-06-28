@@ -7,7 +7,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
-using Com.Turingtechnologies.Materialscrollbar;
 using Google.Android.Material.BottomNavigation;
 using Seeker.Transfers;
 using Soulseek;
@@ -713,12 +712,6 @@ namespace Seeker
             //}
 
             recyclerViewTransferItems.SetLayoutManager(recycleLayoutManager);
-
-            var scrollBar = rootView.FindViewById<MaterialScrollBar>(Resource.Id.scrollBarTransfers);
-            if (scrollBar != null)
-            {
-                scrollBar.SetRecyclerView(recyclerViewTransferItems);
-            }
 
             //// If a layout manager has already been set, get current scroll position.
             //if (mRecyclerView.getLayoutManager() != null)

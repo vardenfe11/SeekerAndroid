@@ -97,7 +97,6 @@
     </PackageReference>
     <PackageReference Include="Xamarin.Essentials" Version="1.7.6" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.1.2" />
-    <PackageReference Include="MaterialScrollBarXamarin" Version="1.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />

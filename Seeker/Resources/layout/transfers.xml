@@ -19,14 +19,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/recyclerView1"/>
-
-    <com.turingtechnologies.materialscrollbar.MaterialScrollBar
-            android:id="@+id/scrollBarTransfers"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignTop="@id/recyclerView1"
-            android:layout_alignBottom="@id/recyclerView1" />
     <TextView
             android:layout_width="200dp"
             android:layout_height="match_parent"
