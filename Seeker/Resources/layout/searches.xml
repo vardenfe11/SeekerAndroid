@@ -34,17 +34,19 @@
         <androidx.recyclerview.widget.RecyclerView
                 android:layout_below="@id/recyclerViewChips"
                 android:minWidth="25px"
-                app:fastScrollEnabled="true"
-                app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
-                app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
-                app:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
-                app:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track"
                 android:paddingBottom="80dp"
                 android:clipToPadding="false"
                 android:minHeight="25px"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/recyclerViewSearches"/>
+
+        <com.timusus.recyclerviewfastscroll.VerticalRecyclerViewFastScroller
+                android:id="@+id/fast_scroller_search"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                app:fastScrollRecyclerView="@id/recyclerViewSearches" />
 
     </RelativeLayout>
     <RelativeLayout
