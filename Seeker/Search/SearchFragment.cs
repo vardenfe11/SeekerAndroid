@@ -11,6 +11,7 @@ using Android.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
+using Com.Timusus.RecyclerViewFastScroll;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.FloatingActionButton;
@@ -926,6 +927,13 @@ namespace Seeker
                 recyclerViewTransferItems.SetAdapter(recyclerSearchAdapter);
                 //CustomAdapter customAdapter = new CustomAdapter(Context, SearchResponses);
                 //lv.Adapter = (customAdapter);
+            }
+
+            var fastScroller = rootView.FindViewById<Com.Timusus.RecyclerViewFastScroll.VerticalRecyclerViewFastScroller>(Resource.Id.fast_scroller_search);
+            if (fastScroller != null)
+            {
+                fastScroller.SetRecyclerView(recyclerViewTransferItems);
+                recyclerViewTransferItems.AddOnScrollListener(fastScroller.OnScrollListener());
             }
 
 
