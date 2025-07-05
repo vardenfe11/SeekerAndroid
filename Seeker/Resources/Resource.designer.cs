@@ -13320,16 +13320,10 @@ namespace AndriodApp1
 			public const int wrap_content_constrained = 2131231663;
 			
 			// aapt resource value: 0x7F0803B0
-                        public const int x_left = 2131231664;
-
-                        // aapt resource value: 0x7F0803B1
-                        public const int x_right = 2131231665;
-
-                        // aapt resource value: 0x7F0803B2
-                        public const int fast_scroller_search = 2131231666;
-
-                        // aapt resource value: 0x7F0803B3
-                        public const int fast_scroller_transfers = 2131231667;
+			public const int x_left = 2131231664;
+			
+			// aapt resource value: 0x7F0803B1
+			public const int x_right = 2131231665;
 			
 			static Id()
 			{

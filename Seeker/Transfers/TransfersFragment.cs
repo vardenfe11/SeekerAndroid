@@ -7,7 +7,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
-using Com.Timusus.RecyclerViewFastScroll;
 using Google.Android.Material.BottomNavigation;
 using Seeker.Transfers;
 using Soulseek;
@@ -733,13 +732,6 @@ namespace Seeker
 
             MainActivity.LogInfoFirebase("AutoClear: " + SeekerState.AutoClearCompleteDownloads);
             MainActivity.LogInfoFirebase("AutoRetry: " + SeekerState.AutoRetryDownload);
-
-            var fastScroller = rootView.FindViewById<Com.Timusus.RecyclerViewFastScroll.VerticalRecyclerViewFastScroller>(Resource.Id.fast_scroller_transfers);
-            if (fastScroller != null)
-            {
-                fastScroller.SetRecyclerView(recyclerViewTransferItems);
-                recyclerViewTransferItems.AddOnScrollListener(fastScroller.OnScrollListener());
-            }
 
             return rootView;
         }
