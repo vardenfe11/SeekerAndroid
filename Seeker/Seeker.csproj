@@ -93,7 +93,7 @@
       <Version>1.3.0.2</Version>
     </PackageReference>
     <PackageReference Include="Karamunting.Android.Timusus.RecyclerViewFastScroll">
-      <Version>1.0.9</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.CoordinatorLayout">
       <Version>1.2.0.6</Version>
