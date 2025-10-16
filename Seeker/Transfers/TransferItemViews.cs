@@ -207,7 +207,18 @@ namespace Seeker
                 }
 #pragma warning restore 0618
             }
-            if (isInBatchMode && TransfersFragment.BatchSelectedItems.Contains(this.ViewHolder.AbsoluteAdapterPosition))
+            bool isSelected = false;
+            int adapterPosition = this.ViewHolder?.AbsoluteAdapterPosition ?? -1;
+            if (adapterPosition >= 0 && StaticHacks.TransfersFrag?.recyclerTransferAdapter != null)
+            {
+                int modelIndex = StaticHacks.TransfersFrag.recyclerTransferAdapter.TranslateAdapterPositionToModelIndex(adapterPosition);
+                if (modelIndex >= 0)
+                {
+                    isSelected = TransfersFragment.BatchSelectedItems.Contains(modelIndex);
+                }
+            }
+
+            if (isInBatchMode && isSelected)
             {
                 if ((int)Android.OS.Build.VERSION.SdkInt >= 21)
                 {
@@ -799,7 +810,18 @@ namespace Seeker
 
             }
 
-            if (isInBatchMode && TransfersFragment.BatchSelectedItems.Contains(this.ViewHolder.AbsoluteAdapterPosition))
+            bool isSelected = false;
+            int adapterPosition = this.ViewHolder?.AbsoluteAdapterPosition ?? -1;
+            if (adapterPosition >= 0 && StaticHacks.TransfersFrag?.recyclerTransferAdapter != null)
+            {
+                int modelIndex = StaticHacks.TransfersFrag.recyclerTransferAdapter.TranslateAdapterPositionToModelIndex(adapterPosition);
+                if (modelIndex >= 0)
+                {
+                    isSelected = TransfersFragment.BatchSelectedItems.Contains(modelIndex);
+                }
+            }
+
+            if (isInBatchMode && isSelected)
             {
                 if ((int)Android.OS.Build.VERSION.SdkInt >= 21)
                 {

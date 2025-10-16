@@ -99,6 +99,8 @@ Directory Count: {5}"</string>
   <string name="chatroom_enter_message">Enter Message</string>
   <string name="send_message">Send</string>
   <string name="filter_chatrooms_here">Filter here</string>
+  <string name="filter_transfers">Filter transfers</string>
+  <string name="clear_filter">Clear filter</string>
 
   <string name="enter_listening_port">Enter Port to Listen On</string>
 
