@@ -1599,6 +1599,7 @@ namespace Seeker
                         //Toast.MakeText(Applicatio,"Retrying...",ToastLength.Short).Show();
                         break;
                     case 1:
+                    {
                         //clear complete?
                         //info = (AdapterView.AdapterContextMenuInfo)item.MenuInfo;
                         MainActivity.LogInfoFirebase("Clear Complete item pressed");
@@ -1632,7 +1633,9 @@ namespace Seeker
                         }
                         //refreshListView();
                         break;
+                    }
                     case 2: //cancel and clear (downloads) OR abort and clear (uploads)
+                    {
                         //info = (AdapterView.AdapterContextMenuInfo)item.MenuInfo;
                         MainActivity.LogInfoFirebase("Cancel and Clear item pressed");
                         ITransferItem tItem = null;
@@ -1697,6 +1700,7 @@ namespace Seeker
                             MainActivity.LogInfoFirebase("Cancel and Clear item pressed - bad item");
                         }
                         break;
+                    }
                     case 3:
                         if (NotLoggedInShowMessageGaurd("get queue position"))
                         {
