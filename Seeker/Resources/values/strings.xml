@@ -189,6 +189,8 @@ Directory Count: {5}"</string>
   <string name="restore_default_settings">Restore Defaults</string>
 
   <string name="no_transfers_yet">No downloads currently, as you download content it will appear here</string>
+  <string name="transfers_filter_hint">Filter transfers</string>
+  <string name="no_transfers_match_filter">No transfers match the current filter</string>
 
 
   <string name="user_has_no_bio">User has no bio.</string>

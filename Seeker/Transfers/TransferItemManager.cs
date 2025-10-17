@@ -243,6 +243,48 @@ namespace Seeker
         /// <returns></returns>
         public object RemoveAtUserIndex(int indexOfItem)
         {
+            return RemoveAtUserIndexInternal(indexOfItem, false);
+        }
+
+        private object RemoveAtUserIndexInternal(int indexOfItem, bool ignoreFilter)
+        {
+            if (indexOfItem < 0)
+            {
+                return null;
+            }
+
+            if (!ignoreFilter && TransfersFragment.IsFilterActiveStatic)
+            {
+                var displayedItem = TransfersFragment.GetDisplayedItemAt(indexOfItem);
+                if (displayedItem is FolderItem folderItem)
+                {
+                    int actualIndex;
+                    lock (AllFolderItems)
+                    {
+                        actualIndex = AllFolderItems.IndexOf(folderItem);
+                    }
+                    if (actualIndex >= 0)
+                    {
+                        return RemoveAtUserIndexInternal(actualIndex, true);
+                    }
+                    return null;
+                }
+                else if (displayedItem is TransferItem transferItem)
+                {
+                    int actualIndex;
+                    lock (AllTransferItems)
+                    {
+                        actualIndex = AllTransferItems.IndexOf(transferItem);
+                    }
+                    if (actualIndex >= 0)
+                    {
+                        return RemoveAtUserIndexInternal(actualIndex, true);
+                    }
+                    return null;
+                }
+                return null;
+            }
+
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
@@ -278,6 +320,16 @@ namespace Seeker
 
         public ITransferItem GetItemAtUserIndex(int indexOfItem)
         {
+            if (TransfersFragment.IsFilterActiveStatic)
+            {
+                var displayed = TransfersFragment.GetDisplayedItemAt(indexOfItem);
+                if (displayed != null)
+                {
+                    return displayed;
+                }
+                return null;
+            }
+
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
@@ -302,6 +354,15 @@ namespace Seeker
         /// <returns></returns>
         public int GetUserIndexForTransferItem(TransferItem ti)
         {
+            if (TransfersFragment.IsFilterActiveStatic)
+            {
+                int filteredIndex = TransfersFragment.GetDisplayedIndexForItem(ti);
+                if (filteredIndex != -1)
+                {
+                    return filteredIndex;
+                }
+            }
+
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
@@ -326,6 +387,15 @@ namespace Seeker
 
         public int GetIndexForFolderItem(FolderItem ti)
         {
+            if (TransfersFragment.IsFilterActiveStatic)
+            {
+                int filteredIndex = TransfersFragment.GetDisplayedIndexForItem(ti);
+                if (filteredIndex != -1)
+                {
+                    return filteredIndex;
+                }
+            }
+
             lock (AllFolderItems)
             {
                 return AllFolderItems.IndexOf(ti);
@@ -355,31 +425,72 @@ namespace Seeker
         /// <returns></returns>
         public int GetUserIndexForTransferItem(string fullfilename)
         {
+            if (fullfilename == null)
+            {
+                return -1;
+            }
+
+            TransferItem transferItem = null;
+            FolderItem folderItem = null;
+            int index = -1;
+
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
                 {
-                    return TransfersFragment.GetCurrentlySelectedFolder().TransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
+                    var folder = TransfersFragment.GetCurrentlySelectedFolder();
+                    index = folder.TransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
+                    if (index >= 0)
+                    {
+                        transferItem = folder.TransferItems[index];
+                    }
                 }
                 else
                 {
-                    TransferItem ti;
                     lock (AllTransferItems)
                     {
-                        ti = AllTransferItems.Find((ti) => ti.FullFilename == fullfilename);
+                        transferItem = AllTransferItems.Find((ti) => ti.FullFilename == fullfilename);
                     }
-                    string foldername = ti.FolderName;
-                    if (foldername == null)
+                    if (transferItem != null)
                     {
-                        foldername = Common.Helpers.GetFolderNameFromFile(ti.FullFilename);
+                        string foldername = transferItem.FolderName;
+                        if (foldername == null)
+                        {
+                            foldername = Common.Helpers.GetFolderNameFromFile(transferItem.FullFilename);
+                        }
+                        index = AllFolderItems.FindIndex((FolderItem fi) => { return fi.FolderName == foldername && fi.Username == transferItem.Username; });
+                        if (index >= 0)
+                        {
+                            folderItem = AllFolderItems[index];
+                        }
                     }
-                    return AllFolderItems.FindIndex((FolderItem fi) => { return fi.FolderName == foldername && fi.Username == ti.Username; });
                 }
             }
             else
             {
-                return AllTransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
+                lock (AllTransferItems)
+                {
+                    index = AllTransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
+                    if (index >= 0)
+                    {
+                        transferItem = AllTransferItems[index];
+                    }
+                }
             }
+
+            if (TransfersFragment.IsFilterActiveStatic)
+            {
+                if (folderItem != null)
+                {
+                    return TransfersFragment.GetDisplayedIndexForItem(folderItem);
+                }
+                if (transferItem != null)
+                {
+                    return TransfersFragment.GetDisplayedIndexForItem(transferItem);
+                }
+            }
+
+            return index;
         }
 
 
