@@ -1555,6 +1555,8 @@ namespace Seeker
                     return base.OnContextItemSelected(item);
                 }
 
+                ITransferItem tItem = null;
+
                 switch (item.ItemId)
                 {
                     case 0: //single transfer only
@@ -1638,7 +1640,6 @@ namespace Seeker
                     {
                         //info = (AdapterView.AdapterContextMenuInfo)item.MenuInfo;
                         MainActivity.LogInfoFirebase("Cancel and Clear item pressed");
-                        ITransferItem tItem = null;
                         try
                         {
                             tItem = TransferItemManagerWrapped.GetItemAtUserIndex(position);
