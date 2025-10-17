@@ -6,11 +6,32 @@
         android:layout_height="match_parent"
         tools:context="android.PageFragment"
         android:id="@+id/relativeLayout1">
+    <LinearLayout
+            android:id="@+id/header1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:gravity="center_vertical">
+
+        <EditText
+                android:id="@+id/transfersFilterText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:hint="@string/filter_transfers_here"
+                android:contentDescription="@string/filter_transfers_here"/>
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
             android:layout_below="@id/header1"
             android:minWidth="25px"
             android:minHeight="25px"
-            android:scrollbars="vertical"
             app:fastScrollEnabled="true"
             app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
             app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
