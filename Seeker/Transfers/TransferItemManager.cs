@@ -659,12 +659,17 @@ namespace Seeker
                 }
 
 
+                var globalIndexes = TransfersFragment.BatchSelectedItems
+                    .Select(TransfersFragment.GetGlobalIndexFromAdapterPosition)
+                    .Where(idx => idx != -1)
+                    .ToList();
+
                 if (isFolderItems)
                 {
                     List<FolderItem> toClear = new List<FolderItem>();
-                    foreach (int pos in TransfersFragment.BatchSelectedItems)
+                    foreach (int index in globalIndexes)
                     {
-                        toClear.Add(GetItemAtUserIndex(pos) as FolderItem);
+                        toClear.Add(GetItemAtUserIndex(index) as FolderItem);
                     }
                     foreach (FolderItem item in toClear)
                     {
@@ -676,15 +681,15 @@ namespace Seeker
                 {
                     List<TransferItem> toCleanUp = new List<TransferItem>();
                     List<TransferItem> toClear = new List<TransferItem>();
-                    TransfersFragment.BatchSelectedItems.Sort();
-                    TransfersFragment.BatchSelectedItems.Reverse();
-                    foreach (int pos in TransfersFragment.BatchSelectedItems)
+                    globalIndexes.Sort();
+                    globalIndexes.Reverse();
+                    foreach (int index in globalIndexes)
                     {
-                        if (TransferItemManagerWrapper.NeedsCleanUp(GetItemAtUserIndex(pos) as TransferItem))
+                        if (TransferItemManagerWrapper.NeedsCleanUp(GetItemAtUserIndex(index) as TransferItem))
                         {
-                            toCleanUp.Add(GetItemAtUserIndex(pos) as TransferItem);
+                            toCleanUp.Add(GetItemAtUserIndex(index) as TransferItem);
                         }
-                        this.RemoveAtUserIndex(pos);
+                        this.RemoveAtUserIndex(index);
                     }
                 }
             }
@@ -766,17 +771,22 @@ namespace Seeker
                     isFolderItems = true;
                 }
 
-                for (int i = 0; i < TransfersFragment.BatchSelectedItems.Count; i++)
+                var globalIndexes = TransfersFragment.BatchSelectedItems
+                    .Select(TransfersFragment.GetGlobalIndexFromAdapterPosition)
+                    .Where(idx => idx != -1)
+                    .ToList();
+
+                for (int i = 0; i < globalIndexes.Count; i++)
                 {
                     //CancellationTokens[ProduceCancellationTokenKey(transferItems[i])]?.Cancel();
                     if (isFolderItems)
                     {
-                        FolderItem fi = this.GetItemAtUserIndex(TransfersFragment.BatchSelectedItems[i]) as FolderItem;
+                        FolderItem fi = this.GetItemAtUserIndex(globalIndexes[i]) as FolderItem;
                         CancelFolder(fi, prepareForClear);
                     }
                     else
                     {
-                        TransferItem ti = this.GetItemAtUserIndex(TransfersFragment.BatchSelectedItems[i]) as TransferItem;
+                        TransferItem ti = this.GetItemAtUserIndex(globalIndexes[i]) as TransferItem;
                         if (prepareForClear)
                         {
                             if (ti.InProcessing) //let continuation action clear this guy
