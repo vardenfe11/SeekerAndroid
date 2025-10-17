@@ -10,7 +10,7 @@
         <dimen name="browse_no_details_top_bottom">4dp</dimen>
         <dimen name="browse_details_top">2dp</dimen>
         <dimen name="browse_details_bottom">1dp</dimen>
-    <dimen name="fastscroll_minimum_range">48dp</dimen>
+    <dimen name="fastscroll_minimum_range">0dp</dimen>
 
 
 </resources>
