@@ -743,6 +743,12 @@ namespace Seeker
             }
             //this.primaryListView = rootView.FindViewById<ListView>(Resource.Id.listView1);
             recyclerViewTransferItems = rootView.FindViewById<RecyclerView>(Resource.Id.recyclerView1);
+            if (recyclerViewTransferItems != null)
+            {
+                recyclerViewTransferItems.FocusableInTouchMode = true;
+                recyclerViewTransferItems.RequestFocus();
+                recyclerViewTransferItems.KeyPress += RecyclerViewTransferItems_KeyPress;
+            }
             this.noTransfers = rootView.FindViewById<TextView>(Resource.Id.noTransfersView);
             this.setupUpSharing = rootView.FindViewById<Button>(Resource.Id.setUpSharing);
             this.setupUpSharing.Click += SetupUpSharing_Click;
@@ -834,6 +840,62 @@ namespace Seeker
         public void RestoreScrollPosition()
         {
             ((LinearLayoutManager)recycleLayoutManager).ScrollToPositionWithOffset(ScrollPositionBeforeMovingIntoFolder, ScrollOffsetBeforeMovingIntoFolder); //if you dont do with offset, it scrolls it until the visible item is simply in view (so it will be at bottom, almost a whole screen off)
+        }
+
+        private void RecyclerViewTransferItems_KeyPress(object sender, View.KeyEventArgs e)
+        {
+            if (e?.Event == null || e.Event.Action != KeyEventActions.Down)
+            {
+                return;
+            }
+
+            if (!(recycleLayoutManager is LinearLayoutManager linearLayoutManager))
+            {
+                return;
+            }
+
+            var adapter = recyclerViewTransferItems?.GetAdapter();
+            int itemCount = adapter?.ItemCount ?? 0;
+            if (itemCount <= 0)
+            {
+                return;
+            }
+
+            int firstVisible = linearLayoutManager.FindFirstVisibleItemPosition();
+            int lastVisible = linearLayoutManager.FindLastVisibleItemPosition();
+            if (firstVisible == RecyclerView.NoPosition || lastVisible == RecyclerView.NoPosition)
+            {
+                firstVisible = Math.Max(0, firstVisible);
+                lastVisible = Math.Max(firstVisible, lastVisible);
+            }
+
+            int visibleCount = Math.Max(1, lastVisible - firstVisible + 1);
+            int targetPosition;
+
+            switch (e.Event.KeyCode)
+            {
+                case Keycode.PageDown:
+                    targetPosition = Math.Min(itemCount - 1, lastVisible + visibleCount);
+                    linearLayoutManager.ScrollToPositionWithOffset(targetPosition, 0);
+                    e.Handled = true;
+                    break;
+                case Keycode.PageUp:
+                    targetPosition = Math.Max(0, firstVisible - visibleCount);
+                    linearLayoutManager.ScrollToPositionWithOffset(targetPosition, 0);
+                    e.Handled = true;
+                    break;
+                case Keycode.MoveHome:
+                case Keycode.Home:
+                    linearLayoutManager.ScrollToPositionWithOffset(0, 0);
+                    e.Handled = true;
+                    break;
+                case Keycode.MoveEnd:
+                case Keycode.End:
+                    targetPosition = itemCount - 1;
+                    linearLayoutManager.ScrollToPositionWithOffset(targetPosition, 0);
+                    e.Handled = true;
+                    break;
+            }
         }
 
         public static ActionModeCallback TransfersActionModeCallback = null;
