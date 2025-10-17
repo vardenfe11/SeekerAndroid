@@ -60,9 +60,7 @@ namespace Seeker.Views
 
         private bool HandleFastScrollTouch(MotionEvent e)
         {
-            RecyclerView.LayoutManager layoutManager = GetLayoutManager();
-            RecyclerView.Adapter adapter = GetAdapter();
-            if (layoutManager == null || adapter == null)
+            if (LayoutManager == null || Adapter == null)
             {
                 fastScrollTouchActive = false;
                 return false;
@@ -76,14 +74,14 @@ namespace Seeker.Views
                     {
                         fastScrollTouchActive = true;
                         Parent?.RequestDisallowInterceptTouchEvent(true);
-                        ScrollToFastScrollPosition(layoutManager, adapter, e.GetY());
+                        ScrollToFastScrollPosition(e.GetY());
                         return true;
                     }
                     break;
                 case MotionEventActions.Move:
                     if (fastScrollTouchActive)
                     {
-                        ScrollToFastScrollPosition(layoutManager, adapter, e.GetY());
+                        ScrollToFastScrollPosition(e.GetY());
                         return true;
                     }
                     break;
@@ -92,7 +90,7 @@ namespace Seeker.Views
                 case MotionEventActions.ButtonRelease:
                     if (fastScrollTouchActive)
                     {
-                        ScrollToFastScrollPosition(layoutManager, adapter, e.GetY());
+                        ScrollToFastScrollPosition(e.GetY());
                         fastScrollTouchActive = false;
                         return true;
                     }
@@ -107,8 +105,9 @@ namespace Seeker.Views
             return x >= Width - fastScrollTouchAreaPx;
         }
 
-        private void ScrollToFastScrollPosition(RecyclerView.LayoutManager layoutManager, RecyclerView.Adapter adapter, float y)
+        private void ScrollToFastScrollPosition(float y)
         {
+            var adapter = Adapter;
             if (adapter == null)
             {
                 return;
@@ -131,7 +130,7 @@ namespace Seeker.Views
             int targetPosition = (int)Math.Round(proportion * (itemCount - 1));
             targetPosition = Math.Max(0, Math.Min(itemCount - 1, targetPosition));
 
-            if (layoutManager is LinearLayoutManager linear)
+            if (LayoutManager is LinearLayoutManager linear)
             {
                 linear.ScrollToPositionWithOffset(targetPosition, 0);
             }
@@ -152,9 +151,7 @@ namespace Seeker.Views
 
         private bool HandleKeyboardScroll(Keycode keyCode)
         {
-            RecyclerView.LayoutManager layoutManager = GetLayoutManager();
-            RecyclerView.Adapter adapter = GetAdapter();
-            if (!(layoutManager is LinearLayoutManager linear) || adapter == null)
+            if (!(LayoutManager is LinearLayoutManager linear) || Adapter == null)
             {
                 return false;
             }
@@ -166,7 +163,7 @@ namespace Seeker.Views
                 case Keycode.PageUp:
                     return ScrollByPage(linear, false);
                 case Keycode.MoveEnd:
-                    ScrollToPosition(adapter.ItemCount - 1);
+                    ScrollToPosition(Adapter.ItemCount - 1);
                     return true;
                 case Keycode.MoveHome:
                     ScrollToPosition(0);
@@ -190,14 +187,8 @@ namespace Seeker.Views
                 return false;
             }
 
-            RecyclerView.Adapter adapter = GetAdapter();
-            if (adapter == null)
-            {
-                return false;
-            }
-
             int target = forward ? firstVisible + visibleCount : firstVisible - visibleCount;
-            target = Math.Max(0, Math.Min(adapter.ItemCount - 1, target));
+            target = Math.Max(0, Math.Min(Adapter.ItemCount - 1, target));
             layoutManager.ScrollToPositionWithOffset(target, 0);
             return true;
         }

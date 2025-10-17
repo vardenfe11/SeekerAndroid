@@ -1656,7 +1656,7 @@ namespace Seeker
                             uptoken?.Cancel();
                             //CancellationTokens[ProduceCancellationTokenKey(tItem)]?.Cancel(); throws if does not exist.
                             CancellationTokens.Remove(ProduceCancellationTokenKey(tti), out _);
-                            bool requiresRefreshItem = IsFilterActive;
+                            bool requiresRefresh = IsFilterActive;
                             lock (TransferItemManagerWrapped.GetUICurrentList())
                             {
                                 if (InUploadsMode)
@@ -1668,7 +1668,7 @@ namespace Seeker
                                     TransferItemManagerWrapped.RemoveAndCleanUpAtUserIndex(position); //this means basically, wait for the stream to be closed. no race conditions..
                                 }
                             }
-                            if (requiresRefreshItem)
+                            if (requiresRefresh)
                             {
                                 SetRecyclerAdapter(true);
                             }
@@ -1681,12 +1681,12 @@ namespace Seeker
                         {
                             TransferItemManagerWrapped.CancelFolder(fi, true);
                             TransferItemManagerWrapped.ClearAllFromFolderAndClean(fi);
-                            bool requiresRefreshFolder = IsFilterActive;
+                            bool requiresRefresh = IsFilterActive;
                             lock (TransferItemManagerWrapped.GetUICurrentList())
                             {
                                 //TransferItemManagerDL.RemoveAtUserIndex(position); we already removed
                             }
-                            if (requiresRefreshFolder)
+                            if (requiresRefresh)
                             {
                                 SetRecyclerAdapter(true);
                             }
