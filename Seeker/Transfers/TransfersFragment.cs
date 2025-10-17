@@ -890,7 +890,6 @@ namespace Seeker
                     e.Handled = true;
                     break;
                 case Keycode.MoveEnd:
-                case Keycode.End:
                     targetPosition = itemCount - 1;
                     linearLayoutManager.ScrollToPositionWithOffset(targetPosition, 0);
                     e.Handled = true;
