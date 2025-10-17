@@ -2,8 +2,8 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <!-- Wider thumb for easier touch interaction -->
-            <size android:width="24dp" />
+            <!-- Taller thumb for horizontal fast scroll interactions -->
+            <size android:height="24dp" />
             <solid android:color="@color/fastscroll_thumb_color" />
             <corners android:radius="12dp" />
         </shape>
