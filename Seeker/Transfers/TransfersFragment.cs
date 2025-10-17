@@ -2113,6 +2113,7 @@ namespace Seeker
 
             public bool OnActionItemClicked(ActionMode mode, IMenuItem item)
             {
+                int[] selected;
                 switch (item.ItemId)
                 {
                     //this is the only option that uploads gets
