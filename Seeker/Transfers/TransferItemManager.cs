@@ -243,6 +243,7 @@ namespace Seeker
         /// <returns></returns>
         public object RemoveAtUserIndex(int indexOfItem)
         {
+            indexOfItem = TransfersFragment.MapFilteredIndexToSource(indexOfItem);
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
@@ -278,6 +279,7 @@ namespace Seeker
 
         public ITransferItem GetItemAtUserIndex(int indexOfItem)
         {
+            indexOfItem = TransfersFragment.MapFilteredIndexToSource(indexOfItem);
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
@@ -302,11 +304,12 @@ namespace Seeker
         /// <returns></returns>
         public int GetUserIndexForTransferItem(TransferItem ti)
         {
+            int actualIndex = -1;
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
                 {
-                    return TransfersFragment.GetCurrentlySelectedFolder().TransferItems.IndexOf(ti);
+                    actualIndex = TransfersFragment.GetCurrentlySelectedFolder().TransferItems.IndexOf(ti);
                 }
                 else
                 {
@@ -315,20 +318,30 @@ namespace Seeker
                     {
                         foldername = Common.Helpers.GetFolderNameFromFile(ti.FullFilename);
                     }
-                    return AllFolderItems.FindIndex((FolderItem fi) => { return fi.FolderName == foldername && fi.Username == ti.Username; });
+                    actualIndex = AllFolderItems.FindIndex((FolderItem fi) => { return fi.FolderName == foldername && fi.Username == ti.Username; });
                 }
             }
             else
             {
-                return AllTransferItems.IndexOf(ti);
+                actualIndex = AllTransferItems.IndexOf(ti);
             }
+            if (actualIndex == -1)
+            {
+                return -1;
+            }
+            return TransfersFragment.MapSourceIndexToFiltered(actualIndex);
         }
 
         public int GetIndexForFolderItem(FolderItem ti)
         {
             lock (AllFolderItems)
             {
-                return AllFolderItems.IndexOf(ti);
+                int actualIndex = AllFolderItems.IndexOf(ti);
+                if (actualIndex == -1)
+                {
+                    return -1;
+                }
+                return TransfersFragment.MapSourceIndexToFiltered(actualIndex);
             }
         }
 
@@ -355,11 +368,12 @@ namespace Seeker
         /// <returns></returns>
         public int GetUserIndexForTransferItem(string fullfilename)
         {
+            int actualIndex = -1;
             if (TransfersFragment.GroupByFolder)
             {
                 if (TransfersFragment.GetCurrentlySelectedFolder() != null)
                 {
-                    return TransfersFragment.GetCurrentlySelectedFolder().TransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
+                    actualIndex = TransfersFragment.GetCurrentlySelectedFolder().TransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
                 }
                 else
                 {
@@ -368,18 +382,27 @@ namespace Seeker
                     {
                         ti = AllTransferItems.Find((ti) => ti.FullFilename == fullfilename);
                     }
+                    if (ti == null)
+                    {
+                        return -1;
+                    }
                     string foldername = ti.FolderName;
                     if (foldername == null)
                     {
                         foldername = Common.Helpers.GetFolderNameFromFile(ti.FullFilename);
                     }
-                    return AllFolderItems.FindIndex((FolderItem fi) => { return fi.FolderName == foldername && fi.Username == ti.Username; });
+                    actualIndex = AllFolderItems.FindIndex((FolderItem fi) => { return fi.FolderName == foldername && fi.Username == ti.Username; });
                 }
             }
             else
             {
-                return AllTransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
+                actualIndex = AllTransferItems.FindIndex((ti) => ti.FullFilename == fullfilename);
             }
+            if (actualIndex == -1)
+            {
+                return -1;
+            }
+            return TransfersFragment.MapSourceIndexToFiltered(actualIndex);
         }
 
 

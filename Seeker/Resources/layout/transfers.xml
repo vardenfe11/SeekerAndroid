@@ -6,8 +6,42 @@
         android:layout_height="match_parent"
         tools:context="android.PageFragment"
         android:id="@+id/relativeLayout1">
-    <androidx.recyclerview.widget.RecyclerView
+    <LinearLayout
+            android:id="@+id/transferFilterContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_below="@id/header1"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+        <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/filter_transfers">
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/transferFilterEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <ImageButton
+                android:id="@+id/transferFilterClearButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/clear_filter"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="?attr/colorControlNormal"
+                android:visibility="gone"/>
+    </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_below="@id/transferFilterContainer"
             android:minWidth="25px"
             android:minHeight="25px"
             android:scrollbars="none"

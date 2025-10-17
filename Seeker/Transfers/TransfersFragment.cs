@@ -2,12 +2,14 @@
 using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
+using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.TextField;
 using Seeker.Transfers;
 using Soulseek;
 using System;
@@ -64,6 +66,9 @@ namespace Seeker
         public static int ScrollOffsetBeforeMovingIntoFolder = int.MinValue;
         public static FolderItem CurrentlySelectedDLFolder = null;
         public static FolderItem CurrentlySelectedUploadFolder = null;
+        private static readonly object FilteredDataLock = new object();
+        private static List<ITransferItem> currentFilteredItems = new List<ITransferItem>();
+        private static List<int> currentFilteredIndexMap = new List<int>();
         public static bool CurrentlyInFolder()
         {
             if (CurrentlySelectedDLFolder == null && CurrentlySelectedUploadFolder == null)
@@ -83,14 +88,71 @@ namespace Seeker
                 return CurrentlySelectedDLFolder;
             }
         }
+        internal static int MapFilteredIndexToSource(int filteredIndex)
+        {
+            lock (FilteredDataLock)
+            {
+                if (filteredIndex >= 0 && filteredIndex < currentFilteredIndexMap.Count)
+                {
+                    return currentFilteredIndexMap[filteredIndex];
+                }
+            }
+            return filteredIndex;
+        }
+        internal static int MapSourceIndexToFiltered(int sourceIndex)
+        {
+            lock (FilteredDataLock)
+            {
+                int idx = currentFilteredIndexMap.IndexOf(sourceIndex);
+                if (idx >= 0)
+                {
+                    return idx;
+                }
+            }
+            return sourceIndex;
+        }
+        internal static bool TryGetFilteredItemAt(int index, out ITransferItem item)
+        {
+            lock (FilteredDataLock)
+            {
+                if (index >= 0 && index < currentFilteredItems.Count)
+                {
+                    item = currentFilteredItems[index];
+                    return true;
+                }
+            }
+            item = null;
+            return false;
+        }
+        private static void UpdateFilteredDataSnapshot(IEnumerable<ITransferItem> items, List<int> indexMap)
+        {
+            lock (FilteredDataLock)
+            {
+                currentFilteredItems = items?.ToList() ?? new List<ITransferItem>();
+                currentFilteredIndexMap = indexMap ?? new List<int>();
+            }
+        }
+        private static void ClearFilteredDataSnapshot()
+        {
+            lock (FilteredDataLock)
+            {
+                currentFilteredItems = new List<ITransferItem>();
+                currentFilteredIndexMap = new List<int>();
+            }
+        }
         public static volatile bool InUploadsMode = false;
 
         //private ListView primaryListView = null;
         private TextView noTransfers = null;
         private Button setupUpSharing = null;
+        private TextInputEditText transferFilterEditText = null;
+        private ImageButton transferFilterClearButton = null;
         private ISharedPreferences sharedPreferences = null;
         private static System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> ProgressUpdatedThrottler = new System.Collections.Concurrent.ConcurrentDictionary<string, DateTime>();
         public static int THROTTLE_PROGRESS_UPDATED_RATE = 200;//in ms;
+        private string currentTransferFilterText = string.Empty;
+        private CancellationTokenSource transferFilterDebounceCts = null;
+        private const int TransferFilterDebounceDelayMs = 300;
 
         public override void SetMenuVisibility(bool menuVisible)
         {
@@ -684,6 +746,18 @@ namespace Seeker
             this.noTransfers = rootView.FindViewById<TextView>(Resource.Id.noTransfersView);
             this.setupUpSharing = rootView.FindViewById<Button>(Resource.Id.setUpSharing);
             this.setupUpSharing.Click += SetupUpSharing_Click;
+            transferFilterEditText = rootView.FindViewById<TextInputEditText>(Resource.Id.transferFilterEditText);
+            transferFilterClearButton = rootView.FindViewById<ImageButton>(Resource.Id.transferFilterClearButton);
+            if (transferFilterEditText != null)
+            {
+                transferFilterEditText.TextChanged += TransferFilterEditText_TextChanged;
+                currentTransferFilterText = transferFilterEditText.Text?.ToString()?.Trim() ?? string.Empty;
+            }
+            if (transferFilterClearButton != null)
+            {
+                transferFilterClearButton.Click += TransferFilterClearButton_Click;
+            }
+            UpdateTransferFilterClearButtonVisibility(transferFilterEditText?.Text?.ToString());
 
             //View transferOptions = rootView.FindViewById<View>(Resource.Id.transferOptions);
             //transferOptions.Click += TransferOptions_Click;
@@ -769,7 +843,13 @@ namespace Seeker
 
         public void SetRecyclerAdapter(bool restoreState = false)
         {
-            lock (TransferItemManagerWrapped.GetUICurrentList())
+            var uiList = TransferItemManagerWrapped?.GetUICurrentList();
+            if (uiList == null)
+            {
+                ClearFilteredDataSnapshot();
+                return;
+            }
+            lock (uiList)
             {
                 int prevScrollPos = 0;
                 int scrollOffset = 0;
@@ -787,24 +867,193 @@ namespace Seeker
                     }
                 }
 
-
+                System.Collections.IList filteredList = BuildFilteredListAndUpdateMap(uiList);
                 if (GroupByFolder && !CurrentlyInFolder())
                 {
-                    recyclerTransferAdapter = new TransferAdapterRecyclerFolderItem(TransferItemManagerWrapped.GetUICurrentList() as List<FolderItem>);
+                    recyclerTransferAdapter = new TransferAdapterRecyclerFolderItem(filteredList);
                 }
                 else
                 {
-                    recyclerTransferAdapter = new TransferAdapterRecyclerIndividualItem(TransferItemManagerWrapped.GetUICurrentList() as List<TransferItem>);
+                    recyclerTransferAdapter = new TransferAdapterRecyclerIndividualItem(filteredList);
                 }
                 recyclerTransferAdapter.TransfersFragment = this;
                 recyclerTransferAdapter.IsInBatchSelectMode = (TransfersActionMode != null);
                 recyclerViewTransferItems.SetAdapter(recyclerTransferAdapter);
+                if (TransfersActionModeCallback != null)
+                {
+                    TransfersActionModeCallback.Adapter = recyclerTransferAdapter;
+                }
 
                 if (restoreState)
                 {
                     ((LinearLayoutManager)recycleLayoutManager).ScrollToPositionWithOffset(prevScrollPos, scrollOffset);
                 }
             }
+        }
+
+        private System.Collections.IList BuildFilteredListAndUpdateMap(object sourceList)
+        {
+            List<int> indexMap = new List<int>();
+            string filterText = currentTransferFilterText ?? string.Empty;
+            bool hasFilter = !string.IsNullOrWhiteSpace(filterText);
+            if (GroupByFolder && !CurrentlyInFolder())
+            {
+                List<FolderItem> folders = (sourceList as List<FolderItem>) ?? new List<FolderItem>();
+                List<FolderItem> filteredFolders = new List<FolderItem>();
+                for (int i = 0; i < folders.Count; i++)
+                {
+                    FolderItem folder = folders[i];
+                    if (!hasFilter || MatchesFolderItem(folder, filterText))
+                    {
+                        filteredFolders.Add(folder);
+                        indexMap.Add(i);
+                    }
+                }
+                UpdateFilteredDataSnapshot(filteredFolders.Cast<ITransferItem>(), indexMap);
+                return filteredFolders;
+            }
+            else
+            {
+                List<TransferItem> transfers = (sourceList as List<TransferItem>) ?? new List<TransferItem>();
+                List<TransferItem> filteredTransfers = new List<TransferItem>();
+                for (int i = 0; i < transfers.Count; i++)
+                {
+                    TransferItem transfer = transfers[i];
+                    if (!hasFilter || MatchesTransferItem(transfer, filterText))
+                    {
+                        filteredTransfers.Add(transfer);
+                        indexMap.Add(i);
+                    }
+                }
+                UpdateFilteredDataSnapshot(filteredTransfers.Cast<ITransferItem>(), indexMap);
+                return filteredTransfers;
+            }
+        }
+
+        private bool MatchesTransferItem(TransferItem item, string filterText)
+        {
+            if (item == null)
+            {
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(filterText))
+            {
+                return true;
+            }
+            if (!string.IsNullOrEmpty(item.Filename) && item.Filename.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+            if (!string.IsNullOrEmpty(item.Username) && item.Username.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool MatchesFolderItem(FolderItem folder, string filterText)
+        {
+            if (folder == null)
+            {
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(filterText))
+            {
+                return true;
+            }
+            if (!string.IsNullOrEmpty(folder.FolderName) && folder.FolderName.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+            if (!string.IsNullOrEmpty(folder.Username) && folder.Username.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+            lock (folder.TransferItems)
+            {
+                return folder.TransferItems.Any(item => MatchesTransferItem(item, filterText));
+            }
+        }
+
+        private void RefreshAdapterDataSet()
+        {
+            var uiList = TransferItemManagerWrapped?.GetUICurrentList();
+            if (uiList == null)
+            {
+                ClearFilteredDataSnapshot();
+                return;
+            }
+            lock (uiList)
+            {
+                System.Collections.IList filteredList = BuildFilteredListAndUpdateMap(uiList);
+                recyclerTransferAdapter?.UpdateDataSet(filteredList);
+            }
+        }
+
+        private void ApplyTransferFilter(string filterText)
+        {
+            string normalizedFilter = filterText?.Trim() ?? string.Empty;
+            if (string.Equals(currentTransferFilterText, normalizedFilter, StringComparison.Ordinal))
+            {
+                UpdateTransferFilterClearButtonVisibility();
+                return;
+            }
+            currentTransferFilterText = normalizedFilter;
+            UpdateTransferFilterClearButtonVisibility();
+            RefreshAdapterDataSet();
+            recyclerTransferAdapter?.NotifyDataSetChanged();
+        }
+
+        private void DebounceApplyFilter(string text)
+        {
+            transferFilterDebounceCts?.Cancel();
+            var localCts = new CancellationTokenSource();
+            transferFilterDebounceCts = localCts;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(TransferFilterDebounceDelayMs, localCts.Token);
+                    if (localCts.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    string pendingText = text ?? string.Empty;
+                    SeekerState.MainActivityRef?.RunOnUiThread(new Action(() =>
+                    {
+                        if (!IsAdded)
+                        {
+                            return;
+                        }
+                        ApplyTransferFilter(pendingText);
+                    }));
+                }
+                catch (TaskCanceledException)
+                {
+                }
+            });
+        }
+
+        private void TransferFilterEditText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string text = e?.Text?.ToString() ?? string.Empty;
+            UpdateTransferFilterClearButtonVisibility(text);
+            DebounceApplyFilter(text);
+        }
+
+        private void TransferFilterClearButton_Click(object sender, EventArgs e)
+        {
+            transferFilterEditText?.SetText(string.Empty, TextView.BufferType.Normal);
+        }
+
+        private void UpdateTransferFilterClearButtonVisibility(string textOverride = null)
+        {
+            if (transferFilterClearButton == null)
+            {
+                return;
+            }
+            string textToEvaluate = textOverride ?? currentTransferFilterText;
+            transferFilterClearButton.Visibility = string.IsNullOrEmpty(textToEvaluate) ? ViewStates.Gone : ViewStates.Visible;
         }
 
         /// <summary>
@@ -922,20 +1171,22 @@ namespace Seeker
         }
 
 
-        //public override void OnDestroyView()
-        //{
-        //    try
-        //    {
-        //        SeekerState.SoulseekClient.TransferProgressUpdated -= SoulseekClient_TransferProgressUpdated;
-        //        SeekerState.SoulseekClient.TransferStateChanged -= SoulseekClient_TransferStateChanged;
-        //        MainActivity.TransferItemQueueUpdated -= TranferQueueStateChanged;
-        //    }
-        //    catch (System.Exception)
-        //    {
-
-        //    }
-        //    base.OnDestroyView();
-        //}
+        public override void OnDestroyView()
+        {
+            transferFilterDebounceCts?.Cancel();
+            transferFilterDebounceCts = null;
+            if (transferFilterEditText != null)
+            {
+                transferFilterEditText.TextChanged -= TransferFilterEditText_TextChanged;
+                transferFilterEditText = null;
+            }
+            if (transferFilterClearButton != null)
+            {
+                transferFilterClearButton.Click -= TransferFilterClearButton_Click;
+                transferFilterClearButton = null;
+            }
+            base.OnDestroyView();
+        }
 
         //public override void OnDestroy()
         //{
@@ -1416,9 +1667,10 @@ namespace Seeker
                                 Toast.MakeText(SeekerState.ActiveActivityRef, "Selected transfer does not exist anymore.. try again.", ToastLength.Short).Show();
                                 return base.OnContextItemSelected(item);
                             }
-                            recyclerTransferAdapter.NotifyItemRemoved(position);  //UI
-                            //refreshListView();
                         }
+                        RefreshAdapterDataSet();
+                        recyclerTransferAdapter.NotifyItemRemoved(position);  //UI
+                        //refreshListView();
                         break;
                     case 2: //cancel and clear (downloads) OR abort and clear (uploads)
                         //info = (AdapterView.AdapterContextMenuInfo)item.MenuInfo;
@@ -1451,18 +1703,16 @@ namespace Seeker
                                 {
                                     TransferItemManagerWrapped.RemoveAndCleanUpAtUserIndex(position); //this means basically, wait for the stream to be closed. no race conditions..
                                 }
-                                recyclerTransferAdapter.NotifyItemRemoved(position);
                             }
+                            RefreshAdapterDataSet();
+                            recyclerTransferAdapter.NotifyItemRemoved(position);
                         }
                         else if (tItem is FolderItem fi)
                         {
                             TransferItemManagerWrapped.CancelFolder(fi, true);
                             TransferItemManagerWrapped.ClearAllFromFolderAndClean(fi);
-                            lock (TransferItemManagerWrapped.GetUICurrentList())
-                            {
-                                //TransferItemManagerDL.RemoveAtUserIndex(position); we already removed
-                                recyclerTransferAdapter.NotifyItemRemoved(position);
-                            }
+                            RefreshAdapterDataSet();
+                            recyclerTransferAdapter.NotifyItemRemoved(position);
                         }
                         else
                         {
@@ -1871,12 +2121,9 @@ namespace Seeker
                         SeekerState.CancelAndClearAllWasPressedDebouncer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                         TransferItemManagerWrapped.CancelSelectedItems(true);
                         TransferItemManagerWrapped.ClearSelectedItemsAndClean();
-                        var selected = BatchSelectedItems.ToArray();
                         BatchSelectedItems.Clear();
-                        foreach (int pos in selected)
-                        {
-                            Adapter.NotifyItemRemoved(pos);
-                        }
+                        Frag.RefreshAdapterDataSet();
+                        Adapter.NotifyDataSetChanged();
                         //since all selected stuff is going away. its what Gmail action mode does.
                         TransfersActionMode.Finish(); //TransfersActionMode can be null!
                         break;
@@ -1919,6 +2166,7 @@ namespace Seeker
                             BatchSelectedItems.Add(i);
                         }
 
+                        Frag.RefreshAdapterDataSet();
                         TransfersActionModeCallback.Adapter.NotifyDataSetChanged();
 
                         TransfersActionMode.Title = string.Format(SeekerApplication.GetString(Resource.String.Num_Selected), cnt.ToString());
@@ -1936,6 +2184,7 @@ namespace Seeker
                         }
                         BatchSelectedItems = all.Except(oldOnes).ToList();
 
+                        Frag.RefreshAdapterDataSet();
                         TransfersActionModeCallback.Adapter.NotifyDataSetChanged();
 
                         TransfersActionMode.Title = string.Format(SeekerApplication.GetString(Resource.String.Num_Selected), BatchSelectedItems.Count.ToString());
@@ -2211,7 +2460,8 @@ namespace Seeker
                 //recyclerTransferAdapter.NotifyItemRangeRemoved(0,oldCount);
                 //recyclerTransferAdapter.NotifyItemRangeInserted(0,newCount);
 
-                recyclerTransferAdapter.NotifyDataSetChanged();
+                RefreshAdapterDataSet();
+                recyclerTransferAdapter?.NotifyDataSetChanged();
                 //(primaryListView.Adapter as TransferAdapter).NotifyDataSetChanged();
 
             }
@@ -2429,6 +2679,11 @@ namespace Seeker
                 localDataSet = tranfersList;
                 showSpeed = SeekerState.TransferViewShowSpeed;
                 showSizes = SeekerState.TransferViewShowSizes;
+            }
+
+            public void UpdateDataSet(System.Collections.IList data)
+            {
+                localDataSet = data ?? new List<ITransferItem>();
             }
 
         }
@@ -2817,6 +3072,7 @@ namespace Seeker
 
             if (recyclerTransferAdapter != null)
             {
+                RefreshAdapterDataSet();
                 recyclerTransferAdapter.NotifyDataSetChanged();
             }
 
