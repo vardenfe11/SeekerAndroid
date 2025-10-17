@@ -60,10 +60,7 @@ namespace Seeker.Views
 
         private bool HandleFastScrollTouch(MotionEvent e)
         {
-            var layoutManager = GetLayoutManager();
-            var adapter = GetAdapter();
-
-            if (layoutManager == null || adapter == null)
+            if (LayoutManager == null || Adapter == null)
             {
                 fastScrollTouchActive = false;
                 return false;
@@ -110,7 +107,7 @@ namespace Seeker.Views
 
         private void ScrollToFastScrollPosition(float y)
         {
-            var adapter = GetAdapter();
+            var adapter = Adapter;
             if (adapter == null)
             {
                 return;
@@ -133,8 +130,7 @@ namespace Seeker.Views
             int targetPosition = (int)Math.Round(proportion * (itemCount - 1));
             targetPosition = Math.Max(0, Math.Min(itemCount - 1, targetPosition));
 
-            var layoutManager = GetLayoutManager();
-            if (layoutManager is LinearLayoutManager linear)
+            if (LayoutManager is LinearLayoutManager linear)
             {
                 linear.ScrollToPositionWithOffset(targetPosition, 0);
             }
@@ -155,10 +151,7 @@ namespace Seeker.Views
 
         private bool HandleKeyboardScroll(Keycode keyCode)
         {
-            var layoutManager = GetLayoutManager();
-            var adapter = GetAdapter();
-
-            if (!(layoutManager is LinearLayoutManager linear) || adapter == null)
+            if (!(LayoutManager is LinearLayoutManager linear) || Adapter == null)
             {
                 return false;
             }
@@ -170,7 +163,7 @@ namespace Seeker.Views
                 case Keycode.PageUp:
                     return ScrollByPage(linear, false);
                 case Keycode.MoveEnd:
-                    ScrollToPosition(adapter.ItemCount - 1);
+                    ScrollToPosition(Adapter.ItemCount - 1);
                     return true;
                 case Keycode.MoveHome:
                     ScrollToPosition(0);
@@ -194,14 +187,8 @@ namespace Seeker.Views
                 return false;
             }
 
-            var adapter = GetAdapter();
-            if (adapter == null)
-            {
-                return false;
-            }
-
             int target = forward ? firstVisible + visibleCount : firstVisible - visibleCount;
-            target = Math.Max(0, Math.Min(adapter.ItemCount - 1, target));
+            target = Math.Max(0, Math.Min(Adapter.ItemCount - 1, target));
             layoutManager.ScrollToPositionWithOffset(target, 0);
             return true;
         }
