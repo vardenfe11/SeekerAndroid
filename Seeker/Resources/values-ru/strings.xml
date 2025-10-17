@@ -87,6 +87,8 @@
     <string name="chatroom_enter_message">Введите сообщение</string>
     <string name="send_message">Отправить</string>
     <string name="filter_chatrooms_here">Фильтр</string>
+    <string name="filter_transfers">Фильтр передач</string>
+    <string name="clear_filter">Очистить фильтр</string>
     <string name="enter_listening_port">Введите порт для прослушивания</string>
     <string name="create_chatroom_name">Имя комнаты</string>
     <string name="create_chatroom_private">Сделать приватной</string>
